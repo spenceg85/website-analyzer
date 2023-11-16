@@ -1,9 +1,12 @@
-const express = require('express');
-const axios = require('axios');
-const { OpenAIAPI } = require('openai');
+import express from 'express';
+import axios from 'axios';
+import { Configuration, OpenAIApi } from 'openai';
 
 const app = express();
-const openai = new OpenAIAPI({ apiKey: process.env.OPENAI_API_KEY });
+const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
 
 app.use(express.json());
 
@@ -15,7 +18,7 @@ app.post('/analyze-website', async (req, res) => {
         }
 
         // Perform your website analysis logic here
-        // For example, fetching website content, analyzing SEO aspects, etc.
+        // Example: fetching website content, analyzing SEO aspects, etc.
 
         // Then, use OpenAI to generate insights
         const response = await openai.createCompletion({
