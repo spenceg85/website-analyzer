@@ -1,13 +1,13 @@
 {
-  "name": "optimark-seo-wizard-api",
+  "name": "web-wizard-api",
   "version": "1.0.0",
-  "description": "API for OptiMark SEO Wizard to analyze websites for SEO and marketing insights",
+  "description": "API for custom GPT's to analyze websites for SEO insights and learning",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "author": "Your Name",
-  "license": "MIT",
+  "author": "Spencer Grier",
+  "license": "",
   "dependencies": {
     "express": "^4.17.1",
     "axios": "^0.21.1",
