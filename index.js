@@ -1,12 +1,9 @@
-import express from 'express';
-import axios from 'axios';
-import { Configuration, OpenAIApi } from 'openai';
+const express = require('express');
+const axios = require('axios');
+const { OpenAIAPI } = require('openai');
 
 const app = express();
-const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
+const openai = new OpenAIAPI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.use(express.json());
 
