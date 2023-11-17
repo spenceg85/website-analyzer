@@ -1,4 +1,3 @@
-const nanoid = require("nanoid-esm");
 const express = require("express");
 const axios = require("axios");
 const { OpenAI } = require("openai");
@@ -14,12 +13,18 @@ app.post("/analyze-website", async (req, res) => {
     // console.log("req: ", req.body?.url);
     if (!websiteUrl) {
       return res.status(400).send({
-        error: `Website URL is required: ${websiteUrl}, body: ${req.body}`,
+        error: `Website URL is required, you entered: ${websiteUrl}, body: ${res.body}`,
       });
     }
 
     // Perform your website analysis logic here
     // Example: fetching website content, analyzing SEO aspects, etc.
+    const analysis = await performWebsiteAnalysis(websiteUrl).then(
+      (analyzedRes) => {
+        console.log("analysis: ", analyzedRes);
+        return analyzedRes;
+      }
+    );
 
     const prompts = [
       {
@@ -29,37 +34,18 @@ app.post("/analyze-website", async (req, res) => {
       },
       {
         role: "user",
-        content: `Analyze the curated website content ${websiteUrl} for SEO optimization and marketing insights, and provide recommendations to improve the website's search engine rankings and user experience.`,
+        content: `Analyze the curated website content: "${analysis}" for SEO optimization and marketing insights, and provide recommendations to improve the website's search engine rankings and user experience.`,
       },
-      // {
-      //   role: "assistant",
-      //   content:
-      //     "What are the current SEO practices implemented on the website?",
-      // },
-      // {
-      //   role: "assistant",
-      //   content: "How can the website improve its search engine rankings?",
-      // },
-      // {
-      //   role: "assistant",
-      //   content:
-      //     "What are the potential keywords that the website should target based on it's content?",
-      // },
-      // {
-      //   role: "assistant",
-      //   content: "What are the recommended on-page optimization techniques?",
-      // },
-      // {
-      //   role: "assistant",
-      //   content:
-      //     "How can the website improve its user experience and engagement?",
-      // },
-      // {
-      //   role: "assistant",
-      //   content:
-      //     "What are the effective digital marketing strategies for the website?",
-      // },
+      {
+        role: "assistant",
+        content: `What are the current SEO practices implemented on this website? Website's curated content: "${analysis}`,
+      },
+      {
+        role: "assistant",
+        content: `How can this website improve its search engine rankings? Curated website content: "${analysis}"`,
+      },
     ];
+
     // Then, use OpenAI to generate insights
     const response = await openai.chat.completions.create({
       messages: prompts,
@@ -91,9 +77,12 @@ app.post("/analyze-website", async (req, res) => {
 async function fetchWebsiteContent(websiteUrl) {
   try {
     const response = await axios.get(websiteUrl);
-    return response.data;
+    return response.data; // Axios automatically handles the response stream
   } catch (error) {
-    throw new Error("Failed to fetch website content");
+    // Axios wraps the native Node.js error, so we access it via `error.response`
+    throw new Error(
+      `Error fetching content from ${websiteUrl}: ${error.message}`
+    );
   }
 }
 
@@ -101,37 +90,51 @@ async function fetchWebsiteContent(websiteUrl) {
 function analyzeSEO(content) {
   // Perform SEO analysis logic here
   // Example: analyze meta tags, headings, keywords, etc.
+  // Basic logic to analyze meta tags, headings, keywords, etc.
+  // This should be expanded based on specific SEO analysis requirements
+  const metaTagMatch = content.match(/<meta.*?>/g) || [];
+  const headingsMatch = content.match(/<h[1-6].*?>.*?<\/h[1-6]>/g) || [];
+  // ... additional analysis logic
+
   // For now, let's just return a dummy SEO analysis result
-  return `SEO analysis for content: ${content.substring(0, 100)}...`;
+  // return `SEO analysis for content: ${content.substring(0, 100)}...`;
+  return {
+    metaTags: metaTagMatch.length,
+    headings: headingsMatch.length,
+    // ... additional analysis results
+  };
 }
 
 // Function to analyze content and provide keyword recommendations
 function analyzeContent(content) {
   // Perform content analysis logic here
   // Example: analyze text for keyword density, readability, etc.
-  // For now, let's just return a dummy keyword recommendation
-  return `Keyword recommendations for content: ${content.substring(0, 100)}...`;
+  // This should be expanded based on specific content analysis requirements
+  const wordCount = content.split(/\s+/).length;
+  // ... additional analysis logic
+
+  return {
+    wordCount,
+    // ... additional analysis results
+  };
 }
 
 // Function to perform website analysis
 async function performWebsiteAnalysis(websiteUrl) {
   try {
-    // Fetch website content
     const content = await fetchWebsiteContent(websiteUrl);
-
-    // Analyze SEO aspects
     const seoAnalysis = analyzeSEO(content);
+    const wordcount = analyzeContent(content);
 
-    // Analyze content and provide keyword recommendations
-    const keywordRecommendations = analyzeContent(content);
-
-    // Return analysis results
-    return {
+    const finalResponse = {
+      content,
+      url: websiteUrl,
       seoAnalysis,
-      keywordRecommendations,
+      wordcount,
     };
+    return JSON.stringify(finalResponse);
   } catch (error) {
-    throw new Error("Failed to perform website analysis");
+    throw new Error(`Failed to perform website analysis: ${error.message}`);
   }
 }
 
